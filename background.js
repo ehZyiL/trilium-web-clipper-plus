@@ -228,9 +228,13 @@ function toast(message, noteId = null, tabIds = null, tabId = null) {
 		tabIds: tabIds
 	};
 
-	return tabId !== null && tabId !== undefined
+	const delivery = tabId !== null && tabId !== undefined
 		? sendMessageToTab(tabId, targetMessage)
 		: sendMessageToActiveTab(targetMessage);
+	return delivery.catch(error => {
+		console.warn('Could not deliver clip feedback:', error);
+		return null;
+	});
 }
 
 async function recordClipHistory(payload, response, clipType) {
