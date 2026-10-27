@@ -8,8 +8,8 @@
     "smoke:sites": "node tests/live-site-smoke.mjs"
   },
   "devDependencies": {
-    "defuddle": "^0.19.1",
+    "defuddle": "0.19.1",
     "jsdom": "^27.0.0",
-    "linkedom": "^0.18.14"
+    "linkedom": "0.18.14"
   }
 }
