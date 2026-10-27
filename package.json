@@ -2,9 +2,14 @@
   "name": "trilium-web-clipper-plus",
   "private": true,
   "scripts": {
-    "test:p2": "node tests/p2-pipeline.test.mjs"
+    "test:p2": "node tests/p2-pipeline.test.mjs",
+    "compare:extractors": "node tests/compare-extractors.mjs",
+    "compare:extractors:write": "node tests/compare-extractors.mjs --write",
+    "smoke:sites": "node tests/live-site-smoke.mjs"
   },
   "devDependencies": {
-    "jsdom": "^27.0.0"
+    "defuddle": "^0.19.1",
+    "jsdom": "^27.0.0",
+    "linkedom": "^0.18.14"
   }
 }

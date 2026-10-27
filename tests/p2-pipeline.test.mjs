@@ -41,6 +41,30 @@ for (const [file, url, reader] of cases) {
   assert.ok(result.body.textContent.length > 20, `${file} should keep article text`);
 }
 
+const coverageCases = [
+  ['hacker-news', 'https://news.ycombinator.com/item?id=1', '<div class="toptext">Hacker News post body with enough text for coverage.</div>'],
+  ['v2ex', 'https://www.v2ex.com/t/1', '<div class="topic_content">V2EX topic body with enough text for coverage.</div>'],
+  ['xiaoyuzhou', 'https://www.xiaoyuzhoufm.com/episode/000000000000000000000000', '<div class="episode-detail">Xiaoyuzhou episode body with enough text for coverage.</div>'],
+  ['boss', 'https://www.zhipin.com/job_detail/example.html', '<div class="job-detail">BOSS job detail body with enough text for coverage.</div>'],
+  ['xueqiu', 'https://xueqiu.com/1/2', '<div class="article-content">Xueqiu article body with enough text for coverage.</div>'],
+  ['jike', 'https://web.okjike.com/originalPost/000000000000000000000000', '<div data-testid="post-content">Jike post body with enough text for coverage.</div>'],
+  ['douban', 'https://book.douban.com/review/1/', '<div class="review-content">Douban review body with enough text for coverage.</div>'],
+  ['facebook', 'https://www.facebook.com/example/posts/1', '<div data-ad-preview="message">Facebook post body with enough text for coverage.</div>'],
+  ['instagram', 'https://www.instagram.com/p/example/', '<article>Instagram post body with enough text for coverage.</article>'],
+  ['linkedin', 'https://www.linkedin.com/feed/update/urn:li:activity:1/', '<div class="feed-shared-update-v2__description">LinkedIn post body with enough text for coverage.</div>'],
+  ['threads', 'https://www.threads.com/@example/post/1', '<div data-pressable-container>Threads post body with enough text for coverage.</div>'],
+  ['bluesky', 'https://bsky.app/profile/example/post/abcdefghijklm', '<div data-testid="postText">Bluesky post body with enough text for coverage.</div>'],
+  ['substack-note', 'https://substack.com/@example/note/c-1', '<div data-testid="note-body">Substack note body with enough text for coverage.</div>'],
+  ['youtube', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', '<meta name="description" content="YouTube video description with enough text for coverage."><div></div>'],
+  ['bilibili', 'https://www.bilibili.com/video/BV1xx411c7mD/', '<meta name="description" content="Bilibili video description with enough text for coverage."><div></div>']
+];
+for (const [reader, url, body] of coverageCases) {
+  const dom = new JSDOM(`<!doctype html><html><head><title>${reader}</title></head><body>${body}</body></html>`, { url, runScripts: 'outside-only' });
+  for (const source of moduleSource) vm.runInContext(source, dom.getInternalVMContext());
+  const result = extract(dom);
+  assert.equal(result.reader, reader, `${reader} reader should be covered`);
+}
+
 const wechat = extract(loadPage('wechat.html', 'https://mp.weixin.qq.com/s/example'));
 assert.match(wechat.body.innerHTML, /https:\/\/mp\.weixin\.qq\.com\/images\/wechat\.png/);
 assert.doesNotMatch(wechat.body.innerHTML, /<script|alert\(/i);
@@ -62,4 +86,4 @@ const fallback = extract(metadataDom, class FakeReadability {
 assert.equal(fallback.reader, 'readability');
 assert.match(fallback.title, /Readability fallback/);
 
-console.log(`P2 pipeline tests passed (${cases.length} site readers + sanitizer + metadata + fallback).`);
+console.log(`P2 pipeline tests passed (${cases.length} fixture readers + ${coverageCases.length} reference-site coverage readers + sanitizer + metadata + fallback).`);

@@ -1,0 +1,339 @@
+{
+  "fixtures": 8,
+  "pipelineReaders": [
+    "github",
+    "juejin",
+    "medium",
+    "readability",
+    "sspai",
+    "substack",
+    "wechat",
+    "zhihu"
+  ],
+  "pipelineLongerThanReadability": 8,
+  "pipelineLongerThanDefuddle": 8,
+  "rows": [
+    {
+      "file": "simple-article.html",
+      "url": "https://example.com/article",
+      "pipeline": {
+        "reader": "readability",
+        "title": "Fixture Article",
+        "textLength": 149,
+        "tags": [
+          "article",
+          "code",
+          "div",
+          "img",
+          "li",
+          "p",
+          "pre",
+          "table",
+          "tbody",
+          "td",
+          "th",
+          "tr",
+          "ul"
+        ]
+      },
+      "readability": {
+        "title": "Fixture Article",
+        "textLength": 149,
+        "tags": [
+          "article",
+          "code",
+          "div",
+          "img",
+          "li",
+          "p",
+          "pre",
+          "table",
+          "tbody",
+          "td",
+          "th",
+          "tr",
+          "ul"
+        ]
+      },
+      "defuddle": {
+        "title": "Fixture Article",
+        "textLength": 149,
+        "tags": [
+          "article",
+          "code",
+          "img",
+          "li",
+          "p",
+          "pre",
+          "table",
+          "td",
+          "th",
+          "tr",
+          "ul"
+        ]
+      }
+    },
+    {
+      "file": "github.html",
+      "url": "https://github.com/example/repo",
+      "pipeline": {
+        "reader": "github",
+        "title": "GitHub README Fixture",
+        "textLength": 91,
+        "tags": [
+          "article",
+          "code",
+          "h1",
+          "p",
+          "pre"
+        ]
+      },
+      "readability": {
+        "title": "GitHub README Fixture",
+        "textLength": 77,
+        "tags": [
+          "article",
+          "code",
+          "div",
+          "p",
+          "pre"
+        ]
+      },
+      "defuddle": {
+        "title": "GitHub README Fixture",
+        "textLength": 91,
+        "tags": [
+          "article",
+          "code",
+          "h2",
+          "p",
+          "pre"
+        ]
+      }
+    },
+    {
+      "file": "juejin.html",
+      "url": "https://juejin.cn/post/123",
+      "pipeline": {
+        "reader": "juejin",
+        "title": "掘金文章 Fixture",
+        "textLength": 58,
+        "tags": [
+          "a",
+          "article",
+          "code",
+          "h1",
+          "p",
+          "pre"
+        ]
+      },
+      "readability": {
+        "title": "掘金文章 Fixture",
+        "textLength": 58,
+        "tags": [
+          "article",
+          "code",
+          "div",
+          "h2",
+          "p",
+          "pre"
+        ]
+      },
+      "defuddle": {
+        "title": "掘金文章 Fixture",
+        "textLength": 58,
+        "tags": [
+          "article",
+          "code",
+          "h2",
+          "p",
+          "pre"
+        ]
+      }
+    },
+    {
+      "file": "medium.html",
+      "url": "https://medium.com/example/article",
+      "pipeline": {
+        "reader": "medium",
+        "title": "Medium Article Fixture",
+        "textLength": 90,
+        "tags": [
+          "div",
+          "h1",
+          "p"
+        ]
+      },
+      "readability": {
+        "title": "Medium Article Fixture",
+        "textLength": 75,
+        "tags": [
+          "article",
+          "div",
+          "p"
+        ]
+      },
+      "defuddle": {
+        "title": "Medium Article",
+        "textLength": 90,
+        "tags": [
+          "article",
+          "h2",
+          "p"
+        ]
+      }
+    },
+    {
+      "file": "sspai.html",
+      "url": "https://sspai.com/post/123",
+      "pipeline": {
+        "reader": "sspai",
+        "title": "少数派文章 Fixture",
+        "textLength": 54,
+        "tags": [
+          "article",
+          "div",
+          "h1",
+          "p",
+          "table",
+          "tbody",
+          "td",
+          "th",
+          "tr"
+        ]
+      },
+      "readability": {
+        "title": "少数派文章 Fixture",
+        "textLength": 54,
+        "tags": [
+          "article",
+          "div",
+          "h2",
+          "p",
+          "table",
+          "tbody",
+          "td",
+          "th",
+          "tr"
+        ]
+      },
+      "defuddle": {
+        "title": "少数派文章 Fixture",
+        "textLength": 54,
+        "tags": [
+          "article",
+          "div",
+          "h2",
+          "p",
+          "table",
+          "td",
+          "th",
+          "tr"
+        ]
+      }
+    },
+    {
+      "file": "substack.html",
+      "url": "https://example.substack.com/p/example",
+      "pipeline": {
+        "reader": "substack",
+        "title": "Substack Post Fixture",
+        "textLength": 94,
+        "tags": [
+          "div",
+          "h1",
+          "p"
+        ]
+      },
+      "readability": {
+        "title": "Substack Post Fixture",
+        "textLength": 80,
+        "tags": [
+          "article",
+          "div",
+          "p"
+        ]
+      },
+      "defuddle": {
+        "title": "Substack Post Fixture",
+        "textLength": 94,
+        "tags": [
+          "div",
+          "h2",
+          "p"
+        ]
+      }
+    },
+    {
+      "file": "wechat.html",
+      "url": "https://mp.weixin.qq.com/s/example",
+      "pipeline": {
+        "reader": "wechat",
+        "title": "微信文章 Fixture",
+        "textLength": 47,
+        "tags": [
+          "div",
+          "h1",
+          "img",
+          "p"
+        ]
+      },
+      "readability": {
+        "title": "微信文章 Fixture",
+        "textLength": 47,
+        "tags": [
+          "div",
+          "h2",
+          "img",
+          "p"
+        ]
+      },
+      "defuddle": {
+        "title": "微信文章 Fixture",
+        "textLength": 47,
+        "tags": [
+          "body",
+          "h2",
+          "img",
+          "p"
+        ]
+      }
+    },
+    {
+      "file": "zhihu.html",
+      "url": "https://www.zhihu.com/question/1/answer/2",
+      "pipeline": {
+        "reader": "zhihu",
+        "title": "知乎回答 Fixture",
+        "textLength": 49,
+        "tags": [
+          "blockquote",
+          "div",
+          "img",
+          "p"
+        ]
+      },
+      "readability": {
+        "title": "知乎回答 Fixture",
+        "textLength": 49,
+        "tags": [
+          "blockquote",
+          "div",
+          "img",
+          "p"
+        ]
+      },
+      "defuddle": {
+        "title": "知乎回答 Fixture",
+        "textLength": 49,
+        "tags": [
+          "blockquote",
+          "body",
+          "div",
+          "img",
+          "p"
+        ]
+      }
+    }
+  ]
+}
