@@ -19,11 +19,9 @@ async function ensureI18nInitialized() {
 // Keyboard shortcuts
 chrome.commands.onCommand.addListener(async function (command) {
     if (command == "saveSelection") {
-        await saveSelection();
+		await enqueueClip(() => saveSelection(), null);
     } else if (command == "saveWholePage") {
-        await saveWholePage();
-    } else if (command == "saveTabs") {
-        await saveTabs();
+		await enqueueClip(() => saveWholePage(), null);
     } else if (command == "saveCroppedScreenshot") {
         const activeTab = await getActiveTab();
 
@@ -73,12 +71,12 @@ async function cropImage(newArea, dataUrl) {
 	});
 }
 
-async function takeCroppedScreenshot(cropRect) {
-	const activeTab = await getActiveTab();
-	const zoom = await browser.tabs.getZoom(activeTab.id);
+async function takeCroppedScreenshot(cropRect, tabId = null) {
+	const targetTab = tabId !== null && tabId !== undefined ? await browser.tabs.get(tabId) : await getActiveTab();
+	const zoom = await browser.tabs.getZoom(targetTab.id);
 
 	// Get device pixel ratio from content script since service workers don't have access to window
-	const devicePixelRatio = await browser.tabs.sendMessage(activeTab.id, {name: 'get-device-pixel-ratio'});
+	const devicePixelRatio = await browser.tabs.sendMessage(targetTab.id, {name: 'get-device-pixel-ratio'});
 	const totalZoom = zoom * (devicePixelRatio || 1);
 
 	const newArea = Object.assign({}, cropRect);
@@ -87,17 +85,18 @@ async function takeCroppedScreenshot(cropRect) {
 	newArea.width *= totalZoom;
 	newArea.height *= totalZoom;
 
-	const dataUrl = await browser.tabs.captureVisibleTab(null, { format: 'png' });
+	const dataUrl = await browser.tabs.captureVisibleTab(targetTab.windowId, { format: 'png' });
 
 	return await cropImage(newArea, dataUrl);
 }
 
-async function takeWholeScreenshot() {
+async function takeWholeScreenshot(tabId = null) {
 	// this saves only visible portion of the page
 	// workaround to save the whole page is to scroll & stitch
 	// example in https://github.com/mrcoles/full-page-screen-capture-chrome-extension
 	// see page.js and popup.js
-	return await browser.tabs.captureVisibleTab(null, { format: 'png' });
+	const targetTab = tabId !== null && tabId !== undefined ? await browser.tabs.get(tabId) : await getActiveTab();
+	return await browser.tabs.captureVisibleTab(targetTab.windowId, { format: 'png' });
 }
 
 // Function to set development icon
@@ -208,28 +207,30 @@ async function getWindowTabs() {
 	return tabs;
 }
 
-async function sendMessageToActiveTab(message) {
-	const activeTab = await getActiveTab();
-
-	if (!activeTab) {
-		throw new Error("No active tab.");
+async function sendMessageToTab(tabId, message) {
+	if (tabId === null || tabId === undefined) {
+		throw new Error("No target tab.");
 	}
 
-	try {
-		return await browser.tabs.sendMessage(activeTab.id, message);
-	}
-	catch (e) {
-		throw e;
-	}
+	return await browser.tabs.sendMessage(tabId, message);
 }
 
-function toast(message, noteId = null, tabIds = null) {
-	sendMessageToActiveTab({
+async function sendMessageToActiveTab(message) {
+	const activeTab = await getActiveTab();
+	return sendMessageToTab(activeTab?.id, message);
+}
+
+function toast(message, noteId = null, tabIds = null, tabId = null) {
+	const targetMessage = {
 		name: 'toast',
 		message: message,
 		noteId: noteId,
 		tabIds: tabIds
-	});
+	};
+
+	return tabId !== null && tabId !== undefined
+		? sendMessageToTab(tabId, targetMessage)
+		: sendMessageToActiveTab(targetMessage);
 }
 
 function blob2base64(blob) {
@@ -244,22 +245,34 @@ function blob2base64(blob) {
 
 async function fetchImage(url) {
 	const resp = await fetch(url);
+	if (!resp.ok) {
+		throw new Error(`Image request failed with ${resp.status}`);
+	}
+
+	const contentType = (resp.headers.get('content-type') || '').toLowerCase();
+	if (!contentType.startsWith('image/')) {
+		throw new Error(`Unexpected image content type: ${contentType || 'unknown'}`);
+	}
+
 	const blob = await resp.blob();
 
 	return await blob2base64(blob);
 }
 
 async function postProcessImage(image) {
+	const originalSrc = image.src;
 	if (image.src.startsWith("data:image/")) {
 		image.dataUrl = image.src;
 		image.src = "inline." + image.src.substr(11, 3); // this should extract file type - png/jpg
 	}
 	else {
 		try {
-			image.dataUrl = await fetchImage(image.src, image);
+			image.dataUrl = await fetchImage(image.src);
 		}
 		catch (e) {
-			console.log(`Cannot fetch image from ${image.src}`);
+			image.failed = true;
+			image.src = originalSrc;
+			console.log(`Cannot fetch image from ${originalSrc}`);
 		}
 	}
 }
@@ -268,12 +281,22 @@ async function postProcessImages(resp) {
 	if (resp.images) {
 		for (const image of resp.images) {
 			await postProcessImage(image);
+			if (image.failed && resp.content && image.imageId) {
+				const escapedSrc = String(image.src)
+					.replaceAll('&', '&amp;')
+					.replaceAll('"', '&quot;')
+					.replaceAll('<', '&lt;')
+					.replaceAll('>', '&gt;');
+				resp.content = resp.content.split(image.imageId).join(escapedSrc);
+			}
 		}
 	}
 }
 
-async function saveSelection() {
-	const payload = await sendMessageToActiveTab({name: 'trilium-save-selection'});
+async function saveSelection(tabId = null) {
+	const payload = await (tabId !== null && tabId !== undefined
+		? sendMessageToTab(tabId, {name: 'trilium-save-selection'})
+		: sendMessageToActiveTab({name: 'trilium-save-selection'}));
 
 	await postProcessImages(payload);
 
@@ -284,10 +307,10 @@ async function saveSelection() {
 	}
 
 	await ensureI18nInitialized();
-	toast(t("selection_saved"), resp.noteId);
+	toast(t("selection_saved"), resp.noteId, null, tabId);
 }
 
-async function getImagePayloadFromSrc(src, pageUrl) {
+async function getImagePayloadFromSrc(src, pageUrl, tabId = null) {
 	const image = {
 		imageId: randomString(20),
 		src: src
@@ -295,7 +318,7 @@ async function getImagePayloadFromSrc(src, pageUrl) {
 
 	await postProcessImage(image);
 
-	const activeTab = await getActiveTab();
+	const activeTab = tabId !== null && tabId !== undefined ? await browser.tabs.get(tabId) : await getActiveTab();
 
 	return {
 		title: activeTab.title,
@@ -305,12 +328,14 @@ async function getImagePayloadFromSrc(src, pageUrl) {
 	};
 }
 
-async function saveCroppedScreenshot(pageUrl) {
-	const cropRect = await sendMessageToActiveTab({name: 'trilium-get-rectangle-for-screenshot'});
+async function saveCroppedScreenshot(pageUrl, tabId = null) {
+	const cropRect = await (tabId !== null && tabId !== undefined
+		? sendMessageToTab(tabId, {name: 'trilium-get-rectangle-for-screenshot'})
+		: sendMessageToActiveTab({name: 'trilium-get-rectangle-for-screenshot'}));
 
-	const src = await takeCroppedScreenshot(cropRect);
+	const src = await takeCroppedScreenshot(cropRect, tabId);
 
-	const payload = await getImagePayloadFromSrc(src, pageUrl);
+	const payload = await getImagePayloadFromSrc(src, pageUrl, tabId);
 
 	const resp = await getTriliumServerFacade().callService("POST", "clippings", payload);
 
@@ -319,13 +344,13 @@ async function saveCroppedScreenshot(pageUrl) {
 	}
 
 	await ensureI18nInitialized();
-	toast(t("screenshot_saved"), resp.noteId);
+	toast(t("screenshot_saved"), resp.noteId, null, tabId);
 }
 
-async function saveWholeScreenshot(pageUrl) {
-	const src = await takeWholeScreenshot();
+async function saveWholeScreenshot(pageUrl, tabId = null) {
+	const src = await takeWholeScreenshot(tabId);
 
-	const payload = await getImagePayloadFromSrc(src, pageUrl);
+	const payload = await getImagePayloadFromSrc(src, pageUrl, tabId);
 
 	const resp = await getTriliumServerFacade().callService("POST", "clippings", payload);
 
@@ -334,7 +359,7 @@ async function saveWholeScreenshot(pageUrl) {
 	}
 
 	await ensureI18nInitialized();
-	toast(t("screenshot_saved"), resp.noteId);
+	toast(t("screenshot_saved"), resp.noteId, null, tabId);
 }
 
 async function saveImage(srcUrl, pageUrl) {
@@ -350,11 +375,14 @@ async function saveImage(srcUrl, pageUrl) {
 	toast(t("image_saved"), resp.noteId);
 }
 
-async function saveWholePage() {
+async function saveWholePage(tabId = null) {
+	let targetTabId = tabId;
 	try {
+		const targetTab = tabId !== null && tabId !== undefined ? await browser.tabs.get(tabId) : await getActiveTab();
+		targetTabId = targetTab?.id;
 		console.log("Starting saveWholePage...");
 
-		const payload = await sendMessageToActiveTab({name: 'trilium-save-page'});
+		const payload = await sendMessageToTab(targetTabId, {name: 'trilium-save-page'});
 		console.log("Received payload from content script:", payload);
 
 		await postProcessImages(payload);
@@ -369,13 +397,36 @@ async function saveWholePage() {
 		}
 
 		await ensureI18nInitialized();
-		toast(t("page_saved"), resp.noteId);
+		toast(t("page_saved"), resp.noteId, null, targetTabId);
 		console.log("Page save completed successfully");
 	} catch (error) {
 		console.error("Error in saveWholePage:", error);
 		await ensureI18nInitialized();
-		toast(t("failed_to_save", {error: error.message}));
+		toast(t("failed_to_save", {error: error.message}), null, null, targetTabId).catch(() => {});
 	}
+}
+
+let clipQueue = Promise.resolve();
+const queuedClipKeys = new Set();
+const completedClipKeys = new Map();
+
+function enqueueClip(task, key = null) {
+	const now = Date.now();
+	if (key && completedClipKeys.has(key) && now - completedClipKeys.get(key) < 30000) {
+		return Promise.resolve({skipped: true, reason: "duplicate"});
+	}
+	if (key && queuedClipKeys.has(key)) {
+		return Promise.resolve({skipped: true, reason: "duplicate"});
+	}
+
+	if (key) queuedClipKeys.add(key);
+	const run = clipQueue.then(() => task());
+	clipQueue = run.catch(() => {});
+
+	return run.finally(() => {
+		if (key) queuedClipKeys.delete(key);
+		if (key) completedClipKeys.set(key, Date.now());
+	});
 }
 
 async function saveLinkWithNote(title, content) {
@@ -456,7 +507,7 @@ async function saveTabs() {
 	toast(t("tabs_saved"), resp.noteId, tabIds);
 }
 
-browser.contextMenus.onClicked.addListener(async function(info) {
+browser.contextMenus.onClicked.addListener(async function(info, tab) {
 	try {
 		// Get current tab info as fallback for missing properties
 		const activeTab = await getActiveTab();
@@ -507,7 +558,10 @@ browser.contextMenus.onClicked.addListener(async function(info) {
 			toast(t("link_saved"), resp.noteId);
 		}
 		else if (info.menuItemId === 'trilium-save-page') {
-			await saveWholePage();
+			await enqueueClip(
+				() => saveWholePage(tab?.id ?? activeTab?.id),
+				(tab?.id ?? activeTab?.id) !== undefined ? `context-page:${tab?.id ?? activeTab.id}:${pageUrl}` : null
+			);
 		}
 		else {
 			console.log("Unrecognized menuItemId", info.menuItemId);
@@ -537,11 +591,11 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 		(async () => {
 			try {
-				const activeTab = await getActiveTab();
-				console.log("Active tab ID:", activeTab.id);
+				const targetTab = sender?.tab || await getActiveTab();
+				console.log("Target tab ID:", targetTab?.id);
 
 				const result = await browser.scripting.executeScript({
-					target: { tabId: activeTab.id },
+					target: { tabId: targetTab.id },
 					files: [request.file]
 				});
 				console.log("Script executed successfully:", request.file);
@@ -591,17 +645,39 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
 			}
 			else if (request.name === 'save-cropped-screenshot') {
 				const activeTab = await getActiveTab();
-				const result = await saveCroppedScreenshot(activeTab.url);
+				const targetTabId = request.tabId ?? activeTab?.id;
+				const result = await enqueueClip(
+					() => saveCroppedScreenshot(request.pageUrl || activeTab?.url, targetTabId),
+					targetTabId !== undefined ? `cropped-screenshot:${targetTabId}:${request.pageUrl || activeTab?.url || ''}` : null
+				);
 				sendResponse({success: true, result: result});
+			}
+			else if (request.name === 'save-selection') {
+				const result = await enqueueClip(
+					() => saveSelection(request.tabId ?? sender?.tab?.id),
+					(request.tabId ?? sender?.tab?.id) !== undefined ? `selection:${request.tabId ?? sender.tab.id}:${request.pageUrl || sender?.tab?.url || ''}` : null
+				);
+				sendResponse(result?.skipped
+					? {success: false, error: t('duplicate_clip_error')}
+					: {success: true, result: result});
 			}
 			else if (request.name === 'save-whole-screenshot') {
 				const activeTab = await getActiveTab();
-				const result = await saveWholeScreenshot(activeTab.url);
+				const targetTabId = request.tabId ?? activeTab?.id;
+				const result = await enqueueClip(
+					() => saveWholeScreenshot(request.pageUrl || activeTab?.url, targetTabId),
+					targetTabId !== undefined ? `whole-screenshot:${targetTabId}:${request.pageUrl || activeTab?.url || ''}` : null
+				);
 				sendResponse({success: true, result: result});
 			}
 			else if (request.name === 'save-whole-page') {
-				const result = await saveWholePage();
-				sendResponse({success: true, result: result});
+				const result = await enqueueClip(
+					() => saveWholePage(request.tabId ?? sender?.tab?.id),
+					(request.tabId ?? sender?.tab?.id) !== undefined ? `manual-page:${request.tabId ?? sender.tab.id}:${request.pageUrl || sender?.tab?.url || ''}` : null
+				);
+				sendResponse(result?.skipped
+					? {success: false, error: t('duplicate_clip_error')}
+					: {success: true, result: result});
 			}
 			else if (request.name === 'save-link-with-note') {
 				const result = await saveLinkWithNote(request.title, request.content);
@@ -620,8 +696,10 @@ browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
 				sendResponse({success: true});
 			}
 			else if (request.name === 'trigger-trilium-search-note-url') {
-				const activeTab = await getActiveTab();
-				getTriliumServerFacade().triggerSearchNoteByUrl(activeTab.url);
+				const targetTab = request.tabId !== undefined
+					? await browser.tabs.get(request.tabId)
+					: await getActiveTab();
+				getTriliumServerFacade().triggerSearchNoteByUrl(request.pageUrl || targetTab?.url || '');
 				sendResponse({success: true});
 			}
 			else {
@@ -652,10 +730,20 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       if (patterns.length === 0) return;
       
       for (let p of patterns) {
-        const regex = new RegExp('^' + p.replace(/\*/g, '.*') + '$');
+        let regex;
+        try {
+          regex = new RegExp('^' + p.replace(/\*/g, '.*') + '$');
+        }
+        catch (error) {
+          console.warn('Skipping invalid auto-clip pattern:', p, error);
+          continue;
+        }
+
         if (regex.test(tab.url)) {
-          const result = await saveWholePage();
-          sendResponse({success: true, result: result});
+          await enqueueClip(
+            () => saveWholePage(tabId),
+            `auto-page:${tabId}:${tab.url}`
+          );
           break;
         }
       }

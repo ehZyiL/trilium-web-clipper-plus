@@ -314,6 +314,10 @@ async function prepareMessageResponse(message) {
 	else if (message.name === 'get-device-pixel-ratio') {
 		return window.devicePixelRatio || 1;
 	}
+	else if (message.name === 'get-selection-info') {
+		const text = window.getSelection()?.toString().replace(/\u00a0/g, ' ').trim() || '';
+		return {hasSelection: Boolean(text), length: text.length};
+	}
 	else if (message.name === "trilium-save-page") {
 		try {
 			console.log("Starting to save page...");
@@ -342,7 +346,7 @@ async function prepareMessageResponse(message) {
 				labels['publishedDate'] = dates.publishedDate.toISOString().substring(0, 10);
 			}
 			if (dates.modifiedDate) {
-				labels['modifiedDate'] = dates.publishedDate.toISOString().substring(0, 10);
+				labels['modifiedDate'] = dates.modifiedDate.toISOString().substring(0, 10);
 			}
 			console.log("Dates processed");
 

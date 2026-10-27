@@ -139,6 +139,16 @@ class I18n {
             const key = element.getAttribute('data-i18n');
             const translatedText = this.t(key);
 
+            const attributeList = (element.getAttribute('data-i18n-attr') || '')
+                .split(',')
+                .map(attribute => attribute.trim())
+                .filter(Boolean);
+            attributeList.forEach(attribute => element.setAttribute(attribute, translatedText));
+
+            if (element.getAttribute('data-i18n-text') === 'false') {
+                return;
+            }
+
             // Handle different element types
             if (element.tagName === 'INPUT' && (element.type === 'submit' || element.type === 'button')) {
                 element.value = translatedText;

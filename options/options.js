@@ -113,10 +113,25 @@ $triilumDesktopSetupForm.on("submit", e => {
 
 function saveAutoClipPatterns() {
     const patterns = $autoClipPatterns.val();
+    const invalidPatterns = patterns
+        .split('\n')
+        .map(pattern => pattern.trim())
+        .filter(Boolean)
+        .filter(pattern => {
+            try {
+                new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+                return false;
+            }
+            catch (error) {
+                return true;
+            }
+        });
     browser.storage.sync.set({
         autoClipPatterns: patterns
     });
-    showSuccess(t("auto_clip_patterns_saved"));
+    showSuccess(invalidPatterns.length
+        ? `${t("auto_clip_patterns_saved")} ${t("invalid_auto_clip_patterns")}: ${invalidPatterns.join(', ')}`
+        : t("auto_clip_patterns_saved"));
 }
 
 function saveIncludeUrlInNote() {

@@ -4,27 +4,30 @@
 <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <meta content="utf-8" http-equiv="encoding">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="options.css">
 </head>
 
 <body>
 
-<div id="error-message" style="font-weight: bold; color: red; display: none;"></div>
-<div id="success-message" style="font-weight: bold; color: green; display: none;"></div>
+<main class="settings-shell">
+<div id="error-message" class="message error-message"></div>
+<div id="success-message" class="message success-message"></div>
 
+<section class="settings-card">
 <h2 data-i18n="trilium_desktop_instance">Trilium desktop instance</h2>
 
 <p data-i18n="desktop_port_description">Web clipper by default tries to find a running desktop instance on port 37740 or 37840. If you configured your Trilium desktop app to run on a different port, you can specify it here (otherwise keep it empty).</p>
 
-<form id="trilium-desktop-setup-form">
-    <p>
-        <label for="trilium-desktop-port" style="font-weight: bold;" data-i18n="trilium_desktop_port">Trilium desktop port: </label>
-
-        <input type="text" id="trilium-desktop-port" style="text-align: right;" data-i18n="port_placeholder" placeholder="(normally keep this empty)"/>
-    </p>
+<form id="trilium-desktop-setup-form" class="settings-form">
+    <label for="trilium-desktop-port" data-i18n="trilium_desktop_port">Trilium desktop port: </label>
+    <input type="text" id="trilium-desktop-port" data-i18n="port_placeholder" placeholder="(normally keep this empty)"/>
 
     <input type="submit" data-i18n="save_settings" value="Save">
 </form>
+</section>
 
+<section class="settings-card">
 <h2 data-i18n="trilium_server_instance">Trilium server instance</h2>
 
 <p data-i18n="server_description">If you have a server instance set up, you can optionally configure it as a fail over target for the clipped notes. Desktop instance will still be given priority, but in cases that the desktop instance is not available (e.g. it's not running), web clipper will send the notes to the server instance instead.</p>
@@ -35,48 +38,44 @@
     <p><span>You can also</span> <a id="reset-trilium-server-setup" href="javascript:" data-i18n="remove_setup">remove the current setup</a> <span data-i18n="reconfigure">and configure it again.</span></p>
 </div>
 
-<form id="trilium-server-setup-form" style="display: none;">
-    <table>
-        <tr>
-            <th data-i18n="trilium_server_url">Trilium server URL:</th>
-            <td><input type="text" id="trilium-server-url"/></td>
-        </tr>
-        <tr>
-            <th data-i18n="password">Password:</th>
-            <td><input type="password" id="trilium-server-password"/></td>
-        </tr>
-        <tr>
-            <th data-i18n="totp_token">TOTP code:</th>
-            <td><input type="text" id="trilium-server-totp" data-i18n="totp_placeholder" placeholder="(optional)"/></td>
-        </tr>
-        <tr>
-            <th></th>
-            <td><input type="submit" data-i18n="login_server" value="Login to the server instance"/></td>
-        </tr>
-    </table>
+<form id="trilium-server-setup-form" class="settings-form" style="display: none;">
+    <label for="trilium-server-url" data-i18n="trilium_server_url">Trilium server URL:</label>
+    <input type="text" id="trilium-server-url"/>
+    <label for="trilium-server-password" data-i18n="password">Password:</label>
+    <input type="password" id="trilium-server-password"/>
+    <label for="trilium-server-totp" data-i18n="totp_token">TOTP code:</label>
+    <input type="text" id="trilium-server-totp" data-i18n="totp_placeholder" placeholder="(optional)"/>
+    <input type="submit" class="button primary" data-i18n="login_server" value="Login to the server instance"/>
 
     <p data-i18n="password_note">Note that the entered password is not stored anywhere, it will be only used to retrieve an authorization token from the server instance which will be then used to send the clipped notes.</p>
 </form>
+</section>
 
+<section class="settings-card">
 <h2 data-i18n="auto_clip_patterns_title">Auto clip URL patterns</h2>
 <p data-i18n="auto_clip_patterns_desc">When page URL matches any of these patterns (one per line), clip the whole page automatically.</p>
-<textarea id="auto-clip-patterns" rows="5" style="width:100%;"></textarea><br/>
-<button id="save-auto-clip" data-i18n="save_auto_clip_btn">Save patterns</button>
+<textarea id="auto-clip-patterns" rows="5"></textarea>
+<p class="field-hint" data-i18n="auto_clip_patterns_hint">Use * as a wildcard. Invalid lines are skipped when clipping.</p>
+<button id="save-auto-clip" class="button primary" data-i18n="save_auto_clip_btn">Save patterns</button>
+</section>
 
+<section class="settings-card">
 <h2 data-i18n="save_link_options_title">Save Link with Note Options</h2>
-<div style="margin-bottom: 20px;">
+<div class="checkbox-setting">
     <input type="checkbox" id="include-url-in-note" name="include-url-in-note">
     <label for="include-url-in-note" data-i18n="include_url_in_note_label">Include page URL at the beginning of note content</label>
-    <p style="margin-top: 5px; font-size: 0.9em; color: #666;" data-i18n="include_url_in_note_desc">When enabled, the current page URL will be added at the beginning of the note content when using "Save link with a note".</p>
+    <p class="field-hint" data-i18n="include_url_in_note_desc">When enabled, the current page URL will be added at the beginning of the note content when using "Save link with a note".</p>
 </div>
 
-<div style="margin-top: 20px;">
+<div class="language-setting">
     <label for="language-select" data-i18n="language">Language:</label>
     <select id="language-select" style="margin-left: 10px;">
         <option value="en" data-i18n="language_english">English</option>
         <option value="zh" data-i18n="language_chinese">中文</option>
     </select>
 </div>
+</section>
+</main>
 
 <script src="../lib/cash.min.js"></script>
 <script src="../lib/browser-polyfill.js"></script>

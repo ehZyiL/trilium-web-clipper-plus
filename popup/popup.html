@@ -1,57 +1,83 @@
 <!DOCTYPE html>
-
-<html>
-  <head>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-    <meta content="utf-8" http-equiv="encoding">
-    <link rel="stylesheet" href="popup.css"/>
-  </head>
-
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trilium Web Clipper Plus</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
 <body>
-  <div style="display: flex; justify-content: space-between; vertical-align: middle;">
-    <h3 data-i18n="app_title">Trilium Web Clipper Plus</h3>
+  <main class="popup-shell">
+    <header class="app-header">
+      <div class="brand">
+        <img src="../icons/logo3_48x48.png" alt="" class="brand-icon">
+        <div>
+          <div class="brand-title" data-i18n="app_title">Trilium Web Clipper Plus</div>
+          <div class="brand-subtitle" id="page-domain">当前页面</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-button" id="show-options-button" type="button" data-i18n="options" data-i18n-attr="title,aria-label" data-i18n-text="false" title="Options" aria-label="Options">⚙</button>
+        <button class="icon-button" id="show-help-button" type="button" data-i18n="help" data-i18n-attr="title,aria-label" data-i18n-text="false" title="Help" aria-label="Help">?</button>
+      </div>
+    </header>
 
+    <section class="connection-card" aria-live="polite">
+      <span class="status-dot" id="connection-dot"></span>
+      <div>
+        <div class="connection-label" id="connection-label" data-i18n="unknown">unknown</div>
+        <div class="connection-detail" id="connection-detail"></div>
+      </div>
+      <button class="text-button" id="check-connection-button" type="button" data-i18n="check">Check</button>
+    </section>
 
-    <div style="position: relative; top: 6px;">
-      <button class="button" id="show-options-button" data-i18n="options">Options</button>
+    <section class="page-card">
+      <div class="page-card-heading" data-i18n="current_page">Current page</div>
+      <div class="page-title" id="page-title">正在读取当前页面…</div>
+      <div class="capture-hint" id="capture-hint">正在检测选区…</div>
+      <div id="already-visited" class="visited-state hidden"></div>
+    </section>
 
-      <button class="button" id="show-help-button" data-i18n="help">Help</button>
-    </div>
-  </div>
-  <div id="already-visited"></div>
+    <section class="primary-actions">
+      <button class="button primary full needs-connection" id="save-whole-page-button" type="button">
+        <span class="button-icon">↓</span>
+        <span id="save-page-label" data-i18n="save_whole_page">Save whole page</span>
+      </button>
+      <div class="action-grid">
+        <button class="button secondary needs-connection" id="save-selection-button" type="button" data-i18n="save_selection">Save selection</button>
+        <button class="button secondary needs-connection" id="save-cropped-screenshot-button" type="button" data-i18n="crop_screenshot">Crop screenshot</button>
+      </div>
+    </section>
 
-  <button class="button full needs-connection" id="save-cropped-screenshot-button" data-i18n="crop_screenshot">Crop screen shot</button>
-  <button class="button full needs-connection" id="save-whole-screenshot-button" data-i18n="save_whole_screenshot">Save whole screen shot</button>
-  <button class="button full needs-connection" id="save-whole-page-button" data-i18n="save_whole_page">Save whole page</button>
-  <button class="button full needs-connection" id="save-link-with-note-button" data-i18n="save_link_with_note">Save link with a note</button>
-  <button class="button full needs-connection" id="save-tabs-button" data-i18n="save_tabs">Save window's tabs as a list</button>
+    <details class="more-actions">
+      <summary data-i18n="more_actions">More actions</summary>
+      <div class="more-actions-list">
+        <button class="button ghost needs-connection" id="save-whole-screenshot-button" type="button" data-i18n="save_whole_screenshot">Save whole screenshot</button>
+        <button class="button ghost needs-connection" id="save-link-with-note-button" type="button" data-i18n="save_link_with_note">Save link with a note</button>
+        <button class="button ghost needs-connection" id="save-tabs-button" type="button" data-i18n="save_tabs">Save window's tabs as a list</button>
+      </div>
+    </details>
 
-  <div id="save-link-with-note-wrapper">
-    <textarea id="save-link-with-note-textarea" rows="5"></textarea>
+    <section id="save-link-with-note-wrapper" class="note-editor hidden">
+      <label for="save-link-with-note-textarea" data-i18n="note_content">Note content</label>
+      <textarea id="save-link-with-note-textarea" rows="5"></textarea>
+      <label class="checkbox-row"><input type="checkbox" id="keep-title-checkbox"> <span data-i18n="keep_title_checkbox">Keep page title as note title</span></label>
+      <div class="editor-actions">
+        <button class="button primary" id="save-button" type="button" data-i18n="save">Save</button>
+        <button class="button secondary" id="cancel-button" type="button" data-i18n="cancel">Cancel</button>
+      </div>
+    </section>
 
-    <div>
-      <input type="checkbox" id="keep-title-checkbox" name="keep-title-checkbox" value="Bike">
-      <label for="keep-title-checkbox" data-i18n="keep_title_checkbox">Keep page title as note title</label><br>
-    </div>
-    <div style="display: flex;">
-      <button type="submit" class="button wide" id="save-button" data-i18n="save">Save</button>
+    <div class="status-message hidden" id="popup-status" role="status" aria-live="polite"></div>
 
-      <button type="submit" class="button wide" id="cancel-button" data-i18n="cancel">Cancel</button>
-    </div>
-  </div>
-
-  <div style="margin-top: 15px;">
-    <button class="button" id="check-connection-button" data-i18n="check">check</button>
-
-    <div><span data-i18n="status">Status</span>: <span id="connection-status" data-i18n="unknown">unknown</span></div>
-  </div>
+    <footer class="popup-footer">
+      <span data-i18n="app_title">Trilium Web Clipper Plus</span>
+      <span id="busy-indicator" class="busy-indicator hidden">●</span>
+    </footer>
+  </main>
 
   <script src="../lib/browser-polyfill.js"></script>
-  <script src="../lib/cash.min.js"></script>
   <script src="../i18n/i18n.js"></script>
   <script src="popup.js"></script>
-  <script src="../utils.js"></script>
-  <script src="../content.js"></script>
 </body>
-
 </html>
