@@ -332,8 +332,11 @@ async function prepareMessageResponse(message) {
 			await requireLib("lib/Readability-readerable.js");
 			console.log("Readability-readerable loaded");
 
-			const {title, body, metadata, reader} = getReadableDocument();
+			const {title, body, metadata, reader, quality, warning} = getReadableDocument();
 			console.log("Document parsed with Readability");
+			if (warning) {
+				console.warn(`Clip extraction warning: ${warning}`);
+			}
 
 			makeLinksAbsolute(body);
 			console.log("Links made absolute");
@@ -354,6 +357,9 @@ async function prepareMessageResponse(message) {
 			}
 			if (reader) {
 				labels['clipperReader'] = reader;
+			}
+			if (quality) {
+				labels['clipperQuality'] = quality;
 			}
 			console.log("Dates processed");
 

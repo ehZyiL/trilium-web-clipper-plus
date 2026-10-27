@@ -43,12 +43,16 @@
 		const body = global.TriliumHtmlNormalizer.normalize(result.body, {
 			baseUrl: documentRef.location?.href || documentRef.baseURI
 		});
+		const extractedTextLength = textLength(body);
+		const quality = extractedTextLength >= 120 ? 'good' : extractedTextLength >= 40 ? 'partial' : 'low';
 		return {
 			title,
 			body,
 			reader: result.reader,
 			metadata,
-			textLength: textLength(body)
+			textLength: extractedTextLength,
+			quality,
+			warning: quality === 'low' ? 'short-content' : ''
 		};
 	}
 

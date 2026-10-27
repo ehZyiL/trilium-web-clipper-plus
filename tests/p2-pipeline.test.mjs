@@ -85,5 +85,12 @@ const fallback = extract(metadataDom, class FakeReadability {
 });
 assert.equal(fallback.reader, 'readability');
 assert.match(fallback.title, /Readability fallback/);
+assert.equal(fallback.quality, 'good');
+
+const shortDom = new JSDOM('<!doctype html><html><head><title>Short</title></head><body><p>tiny</p></body></html>', { url: 'https://example.com/short', runScripts: 'outside-only' });
+for (const source of moduleSource) vm.runInContext(source, shortDom.getInternalVMContext());
+const shortResult = extract(shortDom);
+assert.equal(shortResult.quality, 'low');
+assert.equal(shortResult.warning, 'short-content');
 
 console.log(`P2 pipeline tests passed (${cases.length} fixture readers + ${coverageCases.length} reference-site coverage readers + sanitizer + metadata + fallback).`);
