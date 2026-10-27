@@ -24,7 +24,8 @@ const urls = {
   'sspai.html': 'https://sspai.com/post/123',
   'medium.html': 'https://medium.com/example/article',
   'substack.html': 'https://example.substack.com/p/example',
-  'github.html': 'https://github.com/example/repo'
+  'github.html': 'https://github.com/example/repo',
+  'linux-do.html': 'https://linux.do/t/topic/3080716'
 };
 
 function plainText(html) {

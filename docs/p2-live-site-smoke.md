@@ -22,3 +22,5 @@ npm run smoke:sites
 以下页面也做过读取探测，但不能把结果当成正文 reader 的回归证据：知乎返回 403，BOSS 详情页返回安全验证；微信、即刻、小宇宙、雪球和社交网站首页没有具体文章/帖子正文；Hacker News 的测试地址返回 419。对应站点仍由 DOM fixture 覆盖测试验证，遇到登录、风控或动态渲染时会回退到 Readability/候选正文策略。
 
 YouTube 和 Bilibili 当前只接入网页标题与描述的 HTML 剪藏，不包含参考项目中的字幕抓取和时间轴生成。
+
+Linux.do 的 `https://linux.do/t/topic/3080716` 是 Discourse topic 页面，reader 会收集 `.topic-post .cooked` 中的首帖和回复，并在楼层之间插入分隔线。当前网络环境访问该站点被 Cloudflare 返回 403，因此该页面使用标准 Discourse DOM fixture 验证，安装后应在浏览器内容脚本中读取实际已渲染的主题 DOM。

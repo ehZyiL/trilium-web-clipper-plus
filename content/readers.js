@@ -64,6 +64,35 @@
 		};
 	}
 
+	function discourseTopicReader(id, hosts) {
+		return {
+			id,
+			matches(documentRef) {
+				return hosts.some(pattern => pattern.test(host(documentRef)))
+					&& documentRef.querySelectorAll('article.topic-post .cooked, .topic-post .cooked, .topic-body .cooked').length > 0;
+			},
+			extract(documentRef) {
+				const posts = [];
+				const seen = new Set();
+				for (const node of documentRef.querySelectorAll('article.topic-post .cooked, .topic-post .cooked, .topic-body .cooked')) {
+					if (seen.has(node)) continue;
+					seen.add(node);
+					const clone = node.cloneNode(true);
+					if (!clone.textContent.trim() && !clone.querySelector('img, pre, table')) continue;
+					posts.push(clone);
+				}
+				if (!posts.length) return null;
+
+				const body = documentRef.createElement('article');
+				posts.forEach((post, index) => {
+					if (index > 0) body.appendChild(documentRef.createElement('hr'));
+					body.appendChild(post);
+				});
+				return {reader: id, title: documentRef.title, body};
+			}
+		};
+	}
+
 	const readers = [
 		{
 			id: 'wechat',
@@ -110,7 +139,8 @@
 		selectorReader('threads', [/^(?:www\.)?threads\.(?:com|net)$/i], ['[data-pressable-container]', 'article', 'main']),
 		selectorReader('bluesky', [/^bsky\.app$/i], ['[data-testid="postText"]', 'main']),
 		mediaReader('youtube', [/^(?:www\.)?youtube\.com$/i, /^youtu\.be$/i], ['meta[name="description"]', '#description-inline-expander', '#description']),
-		mediaReader('bilibili', [/^(?:www\.)?bilibili\.com$/i, /^m\.bilibili\.com$/i], ['meta[name="description"]', '#v_desc', '.video-desc', '.desc-info'])
+		mediaReader('bilibili', [/^(?:www\.)?bilibili\.com$/i, /^m\.bilibili\.com$/i], ['meta[name="description"]', '#v_desc', '.video-desc', '.desc-info']),
+		discourseTopicReader('linux-do', [/^(?:www\.)?linux\.do$/i])
 	];
 
 	global.TriliumSiteReaders = { readers };

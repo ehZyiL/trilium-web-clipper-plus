@@ -11,5 +11,5 @@
 
 - `simple-article.html`：普通正文、代码块、列表、表格和图片。
 - `selection.html`：包含可复制选区的正文页面。
-- `p2-sites/`：微信、掘金、知乎、少数派、Medium、Substack 和 GitHub 的站点 reader 样例；其余参考站点由 `p2-pipeline.test.mjs` 使用 DOM 覆盖用例验证。
+- `p2-sites/`：微信、掘金、知乎、少数派、Medium、Substack、GitHub 和 Linux.do Discourse topic 的站点 reader 样例；其余参考站点由 `p2-pipeline.test.mjs` 使用 DOM 覆盖用例验证。
 - `p2-extractor-comparison.json`：同一批样例使用当前管线、Readability 和 Defuddle 的对比结果；由 `npm run compare:extractors:write` 生成。

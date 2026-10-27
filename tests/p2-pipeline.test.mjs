@@ -33,6 +33,7 @@ const cases = [
   ['medium.html', 'https://medium.com/example/article', 'medium'],
   ['substack.html', 'https://example.substack.com/p/example', 'substack'],
   ['github.html', 'https://github.com/example/repo', 'github']
+  ,['linux-do.html', 'https://linux.do/t/topic/3080716', 'linux-do']
 ];
 
 for (const [file, url, reader] of cases) {
@@ -72,6 +73,13 @@ assert.doesNotMatch(wechat.body.innerHTML, /<script|alert\(/i);
 const juejin = extract(loadPage('juejin.html', 'https://juejin.cn/post/123'));
 assert.doesNotMatch(juejin.body.innerHTML, /javascript:/i);
 assert.match(juejin.body.innerHTML, /language-javascript/);
+
+const linuxDo = extract(loadPage('linux-do.html', 'https://linux.do/t/topic/3080716'));
+assert.equal(linuxDo.reader, 'linux-do');
+assert.match(linuxDo.body.innerHTML, /首帖正文/);
+assert.match(linuxDo.body.innerHTML, /回复内容/);
+assert.match(linuxDo.body.innerHTML, /<hr>/i);
+assert.match(linuxDo.body.innerHTML, /https:\/\/linux\.do\/uploads\/linux-do\.png/);
 
 const metadataDom = new JSDOM(`<!doctype html><html><head><title>Fallback</title><script type="application/ld+json">${JSON.stringify({ '@type': 'Article', headline: 'JSON-LD title', author: { name: 'Author Example' }, datePublished: '2026-02-03' })}</script></head><body><main><p>${'fallback article '.repeat(20)}</p></main></body></html>`, { url: 'https://example.com/article', runScripts: 'outside-only' });
 for (const source of moduleSource) vm.runInContext(source, metadataDom.getInternalVMContext());

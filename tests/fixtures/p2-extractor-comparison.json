@@ -1,8 +1,9 @@
 {
-  "fixtures": 8,
+  "fixtures": 9,
   "pipelineReaders": [
     "github",
     "juejin",
+    "linux-do",
     "medium",
     "readability",
     "sspai",
@@ -10,8 +11,8 @@
     "wechat",
     "zhihu"
   ],
-  "pipelineLongerThanReadability": 8,
-  "pipelineLongerThanDefuddle": 8,
+  "pipelineLongerThanReadability": 9,
+  "pipelineLongerThanDefuddle": 9,
   "rows": [
     {
       "file": "simple-article.html",
@@ -148,6 +149,45 @@
           "h2",
           "p",
           "pre"
+        ]
+      }
+    },
+    {
+      "file": "linux-do.html",
+      "url": "https://linux.do/t/topic/3080716",
+      "pipeline": {
+        "reader": "linux-do",
+        "title": "Linux.do Topic Fixture",
+        "textLength": 97,
+        "tags": [
+          "article",
+          "code",
+          "div",
+          "hr",
+          "img",
+          "p",
+          "pre"
+        ]
+      },
+      "readability": {
+        "title": "Linux.do Topic Fixture",
+        "textLength": 97,
+        "tags": [
+          "article",
+          "code",
+          "div",
+          "img",
+          "p",
+          "pre"
+        ]
+      },
+      "defuddle": {
+        "title": "Linux.do Topic Fixture",
+        "textLength": 32,
+        "tags": [
+          "article",
+          "img",
+          "p"
         ]
       }
     },

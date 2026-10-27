@@ -209,7 +209,7 @@ content/
 
 - `content/metadata.js` 读取 meta、`time` 和 JSON-LD 中的标题、作者和日期。
 - `content/normalize-html.js` 使用标签和属性白名单清洗正文，移除脚本、事件属性、危险链接和无效样式，并处理懒加载图片。
-- `content/readers.js` 提供微信、掘金、知乎、少数派、Medium、Substack、Substack Note、GitHub、YouTube 和 Bilibili，以及参考项目中的 Hacker News、V2EX、豆瓣、雪球、BOSS、小宇宙、即刻、Facebook、Instagram、LinkedIn、Threads 和 Bluesky reader。
+- `content/readers.js` 提供微信、掘金、知乎、少数派、Medium、Substack、Substack Note、GitHub、YouTube、Bilibili 和 Linux.do Discourse 主题 reader，以及参考项目中的 Hacker News、V2EX、豆瓣、雪球、BOSS、小宇宙、即刻、Facebook、Instagram、LinkedIn、Threads 和 Bluesky reader。
 - `content/capture.js` 统一执行站点 reader → Readability → 候选正文回退，并返回现有 HTML payload 所需的正文节点。
 - `content/capture.js` 为正文输出附带 `good`、`partial`、`low` 质量级别；低于阈值时返回 `short-content` 警告，便于界面提示和诊断。
 - `tests/p2-pipeline.test.mjs` 对站点 reader、危险 HTML、懒加载图片、JSON-LD 和 Readability 回退执行 DOM fixture 测试。
