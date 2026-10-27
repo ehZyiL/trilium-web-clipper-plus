@@ -235,16 +235,21 @@ function toast(message, noteId = null, tabIds = null, tabId = null) {
 
 async function recordClipHistory(payload, response, clipType) {
 	if (!response?.noteId) return;
-	const stored = await browser.storage.local.get({clipHistory: []});
-	const history = Array.isArray(stored.clipHistory) ? stored.clipHistory : [];
-	history.unshift({
-		noteId: response.noteId,
-		title: payload?.title || '',
-		pageUrl: payload?.pageUrl || '',
-		clipType,
-		savedAt: new Date().toISOString()
-	});
-	await browser.storage.local.set({clipHistory: history.slice(0, 5)});
+	try {
+		const stored = await browser.storage.local.get({clipHistory: []});
+		const history = Array.isArray(stored.clipHistory) ? stored.clipHistory : [];
+		history.unshift({
+			noteId: response.noteId,
+			title: payload?.title || '',
+			pageUrl: payload?.pageUrl || '',
+			clipType,
+			savedAt: new Date().toISOString()
+		});
+		await browser.storage.local.set({clipHistory: history.slice(0, 5)});
+	}
+	catch (error) {
+		console.warn('Could not record clip history:', error);
+	}
 }
 
 function blob2base64(blob) {
