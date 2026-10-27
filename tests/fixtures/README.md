@@ -11,3 +11,4 @@
 
 - `simple-article.html`：普通正文、代码块、列表、表格和图片。
 - `selection.html`：包含可复制选区的正文页面。
+- `p2-sites/`：微信、掘金、知乎、少数派、Medium、Substack 和 GitHub 的站点 reader 样例。

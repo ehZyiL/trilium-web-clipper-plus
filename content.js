@@ -24,43 +24,34 @@ function pageTitle() {
 }
 
 function getReadableDocument() {
-	// Readability directly change the passed document, so clone to preserve the original web page.
-	const documentCopy = document.cloneNode(true);
-	const readability = new Readability(documentCopy, {
-		serializer: el => el // so that .content is returned as DOM element instead of HTML
+	if (!globalThis.TriliumCapturePipeline) {
+		throw new Error('Extraction pipeline is unavailable');
+	}
+
+	const result = globalThis.TriliumCapturePipeline.extract({
+		document,
+		Readability
 	});
 
-	const article = readability.parse();
-
-	if (!article) {
-		throw new Error('Could not parse HTML document with Readability');
+	if (!result?.body) {
+		throw new Error('Could not parse HTML document');
 	}
 
-	return {
-		title: article.title,
-		body: article.content,
-	}
+	return result;
 }
 
 function getDocumentDates() {
-	var dates = {
-		publishedDate: null,
-		modifiedDate: null,  
+	const metadata = globalThis.TriliumPageMetadata?.getPageMetadata(document) || {};
+	const parseDate = value => {
+		if (!value) return null;
+		const date = new Date(value);
+		return Number.isNaN(date.getTime()) ? null : date;
 	};
-	
-	const articlePublishedTime = document.querySelector("meta[property='article:published_time']");
-	if (articlePublishedTime && articlePublishedTime.getAttribute('content')) {
-		dates.publishedDate = new Date(articlePublishedTime.getAttribute('content'));
-	}
-	
-	const articleModifiedTime = document.querySelector("meta[property='article:modified_time']");
-	if (articleModifiedTime && articleModifiedTime.getAttribute('content')) {
-		dates.modifiedDate = new Date(articleModifiedTime.getAttribute('content'));
-	}
-	
-	// TODO: if we didn't get dates from meta, then try to get them from JSON-LD
-
-	return dates;
+	return {
+		publishedDate: parseDate(metadata.publishedDate),
+		modifiedDate: parseDate(metadata.modifiedDate),
+		author: metadata.author || ''
+	};
 }
 
 function getRectangleArea() {
@@ -208,7 +199,17 @@ function getImages(container) {
 	const images = [];
 
 	for (const img of container.getElementsByTagName('img')) {
-		if (!img.src) {
+		const preferredSource = globalThis.TriliumHtmlNormalizer?.preferredImageSource(img, document.baseURI) || img.src;
+		if (!preferredSource) {
+			img.remove();
+			continue;
+		}
+		img.src = preferredSource;
+
+		const declaredWidth = Number(img.getAttribute('width')) || 0;
+		const declaredHeight = Number(img.getAttribute('height')) || 0;
+		if ((img.naturalWidth === 1 && img.naturalHeight === 1) || (declaredWidth === 1 && declaredHeight === 1)) {
+			img.remove();
 			continue;
 		}
 
@@ -331,7 +332,7 @@ async function prepareMessageResponse(message) {
 			await requireLib("lib/Readability-readerable.js");
 			console.log("Readability-readerable loaded");
 
-			const {title, body} = getReadableDocument();
+			const {title, body, metadata, reader} = getReadableDocument();
 			console.log("Document parsed with Readability");
 
 			makeLinksAbsolute(body);
@@ -347,6 +348,12 @@ async function prepareMessageResponse(message) {
 			}
 			if (dates.modifiedDate) {
 				labels['modifiedDate'] = dates.modifiedDate.toISOString().substring(0, 10);
+			}
+			if (dates.author || metadata?.author) {
+				labels['author'] = dates.author || metadata.author;
+			}
+			if (reader) {
+				labels['clipperReader'] = reader;
 			}
 			console.log("Dates processed");
 

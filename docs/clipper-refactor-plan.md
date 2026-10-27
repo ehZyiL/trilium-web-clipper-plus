@@ -203,6 +203,18 @@ content/
 - 扩充后的 fixture 和检查脚本。
 - Readability/Defuddle 对比结果。
 
+### 当前实现记录（P2 第一版）
+
+当前版本在不改变 MV3 和 Trilium HTML 入库协议的前提下完成了 P2 的第一轮实现：
+
+- `content/metadata.js` 读取 meta、`time` 和 JSON-LD 中的标题、作者和日期。
+- `content/normalize-html.js` 使用标签和属性白名单清洗正文，移除脚本、事件属性、危险链接和无效样式，并处理懒加载图片。
+- `content/readers.js` 提供微信、掘金、知乎、少数派、Medium、Substack、GitHub，以及参考项目中的 Hacker News、V2EX、豆瓣、雪球、BOSS、小宇宙、Facebook、Instagram、LinkedIn、Threads 和 Bluesky reader。
+- `content/capture.js` 统一执行站点 reader → Readability → 候选正文回退，并返回现有 HTML payload 所需的正文节点。
+- `tests/p2-pipeline.test.mjs` 对站点 reader、危险 HTML、懒加载图片、JSON-LD 和 Readability 回退执行 DOM fixture 测试。
+
+Defuddle 尚未作为运行时依赖打入扩展。当前保留了可替换的 reader/engine 边界，后续可以在有真实失败样本和构建链需求时增加 Defuddle A/B 对比，而不改变 Trilium 保存协议。
+
 ## P3：本地暂存与编辑（可选）
 
 ### 目标

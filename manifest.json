@@ -42,6 +42,10 @@
       "js": [
         "lib/browser-polyfill.js",
         "utils.js",
+        "content/metadata.js",
+        "content/normalize-html.js",
+        "content/readers.js",
+        "content/capture.js",
         "content.js"
       ]
     }

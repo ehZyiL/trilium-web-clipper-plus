@@ -1,3 +1,4 @@
 dist/
 .history/
 *-local.zip
+node_modules/
