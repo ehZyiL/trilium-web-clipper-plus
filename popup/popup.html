@@ -17,34 +17,32 @@
         </div>
       </div>
       <div class="header-actions">
-        <span class="header-connection" title="Trilium connection"><span class="status-dot" id="connection-dot"></span><span id="connection-label">未知</span></span>
         <button class="icon-button" id="show-options-button" type="button" data-i18n="options" data-i18n-attr="title,aria-label" data-i18n-text="false" title="Options" aria-label="Options">⚙</button>
         <button class="icon-button" id="show-help-button" type="button" data-i18n="help" data-i18n-attr="title,aria-label" data-i18n-text="false" title="Help" aria-label="Help">?</button>
       </div>
     </header>
 
-    <section class="capture-card">
-      <div class="capture-card-heading" data-i18n="current_page">Current page</div>
-      <div class="page-title" id="page-title">正在读取当前页面…</div>
-      <div class="capture-main">
-        <div class="capture-copy">
-          <div class="capture-label" data-i18n="capture_scope">采集范围</div>
-          <div class="capture-hint" id="capture-hint">正在检测选区…</div>
-          <div class="connection-detail" id="connection-detail"></div>
-        </div>
-        <button class="button primary capture-button needs-connection" id="save-whole-page-button" type="button">
-          <span id="save-page-label" data-i18n="save_whole_page">Save whole page</span>
-        </button>
+    <section class="connection-card" aria-live="polite">
+      <span class="status-dot" id="connection-dot"></span>
+      <div>
+        <div class="connection-label" id="connection-label" data-i18n="unknown">unknown</div>
+        <div class="connection-detail" id="connection-detail"></div>
       </div>
+      <button class="text-button" id="check-connection-button" type="button" data-i18n="check">Check</button>
+    </section>
+
+    <section class="page-card">
+      <div class="page-card-heading" data-i18n="current_page">Current page</div>
+      <div class="page-title" id="page-title">正在读取当前页面…</div>
+      <div class="capture-hint" id="capture-hint">正在检测选区…</div>
       <div id="already-visited" class="visited-state hidden"></div>
     </section>
 
-    <details class="history-section" id="history-section" open>
-      <summary data-i18n="recent_clips">Recent clips</summary>
-      <div id="history-list" class="history-list"></div>
-    </details>
-
-    <section class="quick-actions">
+    <section class="primary-actions">
+      <button class="button primary full needs-connection" id="save-whole-page-button" type="button">
+        <span class="button-icon">↓</span>
+        <span id="save-page-label" data-i18n="save_whole_page">Save whole page</span>
+      </button>
       <div class="action-grid">
         <button class="button secondary needs-connection" id="save-selection-button" type="button" data-i18n="save_selection">Save selection</button>
         <button class="button secondary needs-connection" id="save-cropped-screenshot-button" type="button" data-i18n="crop_screenshot">Crop screenshot</button>
@@ -52,7 +50,7 @@
     </section>
 
     <details class="more-actions">
-      <summary><span data-i18n="more_actions">More actions</span><span class="more-actions-hint" data-i18n="more_actions_hint">screenshots, notes and tabs</span></summary>
+      <summary data-i18n="more_actions">More actions</summary>
       <div class="more-actions-list">
         <button class="button ghost needs-connection" id="save-whole-screenshot-button" type="button" data-i18n="save_whole_screenshot">Save whole screenshot</button>
         <button class="button ghost needs-connection" id="save-link-with-note-button" type="button" data-i18n="save_link_with_note">Save link with a note</button>
@@ -71,6 +69,11 @@
     </section>
 
     <div class="status-message hidden" id="popup-status" role="status" aria-live="polite"></div>
+
+    <details class="history-section" id="history-section">
+      <summary data-i18n="recent_clips">Recent clips</summary>
+      <div id="history-list" class="history-list"></div>
+    </details>
 
     <footer class="popup-footer">
       <span data-i18n="app_title">Trilium Web Clipper Plus</span>
