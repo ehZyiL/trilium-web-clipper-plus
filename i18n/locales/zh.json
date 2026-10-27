@@ -17,6 +17,8 @@
   "checking": "正在检查连接…",
   "working": "处理中…",
   "duplicate_clip_error": "此页面已经在剪藏队列中。",
+  "recent_clips": "最近剪藏",
+  "no_recent_clips": "暂无最近剪藏",
   "invalid_auto_clip_patterns": "以下规则无效，剪藏时会跳过",
   "auto_clip_patterns_hint": "使用 * 表示通配符。无效规则会在剪藏时跳过。",
   "keep_title_checkbox": "保留页面标题作为笔记标题",

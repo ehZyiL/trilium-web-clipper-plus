@@ -93,6 +93,31 @@ function renderVisitedState(searchNote) {
     container.append(createNoteLink(searchNote.noteId, t('open_in_trilium')));
 }
 
+async function loadHistory() {
+    const list = $('#history-list');
+    if (!list) return;
+    const stored = await browser.storage.local.get({clipHistory: []});
+    const history = Array.isArray(stored.clipHistory) ? stored.clipHistory : [];
+    list.replaceChildren();
+    if (!history.length) {
+        const empty = document.createElement('div');
+        empty.className = 'history-empty';
+        empty.textContent = t('no_recent_clips');
+        list.append(empty);
+        return;
+    }
+    history.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'history-item';
+        const title = document.createElement('span');
+        title.className = 'history-title';
+        title.textContent = item.title || item.pageUrl || t('unknown');
+        const open = createNoteLink(item.noteId, t('open_in_trilium'));
+        row.append(title, open);
+        list.append(row);
+    });
+}
+
 function renderConnectionStatus(triliumSearch) {
     if (!triliumSearch) return;
     const status = triliumSearch.status;
@@ -218,4 +243,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadCurrentTab();
     await refreshConnection();
     sendMessage({name: 'send-trilium-search-status'});
+    await loadHistory();
 });

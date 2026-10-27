@@ -100,3 +100,10 @@ button:disabled { cursor: wait; opacity: .55; }
 .status-message.info { background: var(--surface-muted); color: var(--muted); }
 .popup-footer { justify-content: space-between; color: var(--muted); font-size: 10px; }
 .busy-indicator { color: var(--accent); animation: pulse 1s infinite; }
+.history-section { border-top: 1px solid var(--border); padding-top: 9px; }
+.history-section summary { cursor: pointer; color: var(--muted); font-size: 12px; font-weight: 650; }
+.history-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.history-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); }
+.history-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-item a { flex: 0 0 auto; color: var(--accent); font-size: 11px; }
+.history-empty { color: var(--muted); font-size: 12px; }

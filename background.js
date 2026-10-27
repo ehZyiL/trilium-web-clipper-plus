@@ -233,6 +233,20 @@ function toast(message, noteId = null, tabIds = null, tabId = null) {
 		: sendMessageToActiveTab(targetMessage);
 }
 
+async function recordClipHistory(payload, response, clipType) {
+	if (!response?.noteId) return;
+	const stored = await browser.storage.local.get({clipHistory: []});
+	const history = Array.isArray(stored.clipHistory) ? stored.clipHistory : [];
+	history.unshift({
+		noteId: response.noteId,
+		title: payload?.title || '',
+		pageUrl: payload?.pageUrl || '',
+		clipType,
+		savedAt: new Date().toISOString()
+	});
+	await browser.storage.local.set({clipHistory: history.slice(0, 5)});
+}
+
 function blob2base64(blob) {
 	return new Promise(resolve => {
 		const reader = new FileReader();
@@ -307,6 +321,7 @@ async function saveSelection(tabId = null) {
 	}
 
 	await ensureI18nInitialized();
+	await recordClipHistory(payload, resp, 'selection');
 	toast(t("selection_saved"), resp.noteId, null, tabId);
 }
 
@@ -344,6 +359,7 @@ async function saveCroppedScreenshot(pageUrl, tabId = null) {
 	}
 
 	await ensureI18nInitialized();
+	await recordClipHistory(payload, resp, 'screenshot');
 	toast(t("screenshot_saved"), resp.noteId, null, tabId);
 }
 
@@ -359,6 +375,7 @@ async function saveWholeScreenshot(pageUrl, tabId = null) {
 	}
 
 	await ensureI18nInitialized();
+	await recordClipHistory(payload, resp, 'screenshot');
 	toast(t("screenshot_saved"), resp.noteId, null, tabId);
 }
 
@@ -397,6 +414,7 @@ async function saveWholePage(tabId = null) {
 		}
 
 		await ensureI18nInitialized();
+		await recordClipHistory(payload, resp, 'page');
 		toast(t("page_saved"), resp.noteId, null, targetTabId);
 		console.log("Page save completed successfully");
 	} catch (error) {
@@ -445,18 +463,20 @@ async function saveLinkWithNote(title, content) {
 		content = urlLine + content;
 	}
 
-	const resp = await getTriliumServerFacade().callService('POST', 'notes', {
+	const payload = {
 		title: title,
 		content: content,
 		clipType: 'note',
 		pageUrl: activeTab.url
-	});
+	};
+	const resp = await getTriliumServerFacade().callService('POST', 'notes', payload);
 
 	if (!resp) {
 		return false;
 	}
 
 	await ensureI18nInitialized();
+	await recordClipHistory(payload, resp, 'note');
 	toast(t("link_saved"), resp.noteId);
 
 	return true;
@@ -504,6 +524,7 @@ async function saveTabs() {
 	const tabIds = tabs.map(tab=>{return tab.id});
 
 	await ensureI18nInitialized();
+	await recordClipHistory(payload, resp, 'tabs');
 	toast(t("tabs_saved"), resp.noteId, tabIds);
 }
 

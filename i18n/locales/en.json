@@ -17,6 +17,8 @@
   "checking": "Checking connection…",
   "working": "Working…",
   "duplicate_clip_error": "This page is already being clipped.",
+  "recent_clips": "Recent clips",
+  "no_recent_clips": "No recent clips",
   "invalid_auto_clip_patterns": "Invalid patterns skipped",
   "auto_clip_patterns_hint": "Use * as a wildcard. Invalid lines are skipped when clipping.",
   "keep_title_checkbox": "Keep page title as note title",
